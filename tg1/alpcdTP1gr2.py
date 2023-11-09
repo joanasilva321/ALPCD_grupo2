@@ -20,9 +20,10 @@ print('Olá, isso é uma API com pesquisas sobre vagas de emprego\n')
 
 #codigo desnecessario
 for item in json_result['results']:
-       print(item)
+       print(item['locations'])
 
 def csv_(dic):
+     print(dic)
      nome_arquivo_csv = str(input('Qual será o nome do arquivo? ')) + '.csv'
      if arquivo_existe(nome_arquivo_csv):
             novo_csv=str(input(f"O arquivo '{nome_arquivo_csv}' já existe. Deseja criar outro?(s/n): "))
@@ -47,11 +48,14 @@ def adiciona_csv(dic,nome_arquivo_csv):
             descricao = job['company']['description']
             data_p = job['publishedAt']
             salario = job['wage']
+            #if 'locations' in job:
             localizacoes = ', '.join([local['name'] for local in job['locations']])
 
             descricao = descricao.replace(';', ',')  # Remover ponto e vírgula da descrição
-
-            linha = f'{titulo};{empresa};"{descricao}";{data_p};{salario};{localizacoes}\n'
+            if 'locations' in job:
+                linha = f'{titulo};{empresa};"{descricao}";{data_p};{salario};{localizacoes}\n'
+            else:
+                linha=f'{titulo};{empresa};"{descricao}";{data_p};{salario}\n'
             arquivo_csv.write(linha)
 
 def existentente_csv(dic,nome_arquivo_csv):
