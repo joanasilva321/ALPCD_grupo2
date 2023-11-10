@@ -102,6 +102,8 @@ def top(n_jobs):
             res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1667.0 Safari/537.36'})
             encontrado=res.json()
             lista_mais_recentes.append(encontrado)
+            
+    print(json.dumps(lista_mais_recentes, indent=2))
 
     dic={'filtros': lista_mais_recentes}
     csv=str(input('Deseja inportar para formato csv(s/n)? '))
@@ -111,9 +113,6 @@ def top(n_jobs):
 
     if csv == 's':
        csv_(dic)
-
-    return lista_mais_recentes
-
 
 def salary(id_job):
     for item in json_result['results']:
@@ -205,7 +204,9 @@ def valid_date(s):
     try:
         return datetime.datetime.strptime(s, "%Y-%m-%d").date()
     except ValueError:
-        raise print(f"Invalid date format. Please use YYYY-MM-DD.")
+        print(f"Invalid date format. Please use YYYY-MM-DD.")
+    
+    return None
 
 def date(current_job, start_date, end_date):
     publ_at = current_job['publishedAt']
@@ -234,18 +235,17 @@ def job_skills(skills, start_date, end_date):
             if date(job, start_date, end_date): # verificar se cada job que respeita a condição tem data de publicação entre as datas introduzidas no terminal
                 matching_jobs.append(job)
                 # se já encontrou pelo menos um skill vai procurar nos outros jobs restantes
-            
-    # dic = {'filtros': matching_jobs}
+    print(json.dumps(matching_jobs, indent=2))
+
+    dic = {'filtros': matching_jobs}
     
-    # csv=str(input('Deseja inportar para formato csv(s/n)? '))
+    csv=str(input('Deseja inportar para formato csv(s/n)? '))
 
-    # while csv != 's' and csv != 'n':
-    #      csv=str(input('Insira (s) para sim ou (n) para não, minúsculo: '))
+    while csv != 's' and csv != 'n':
+         csv=str(input('Insira (s) para sim ou (n) para não, minúsculo: '))
 
-    # if csv == 's':
-    #    csv_(dic)
-
-    return matching_jobs
+    if csv == 's':
+       csv_(dic)
 
     
 
@@ -284,7 +284,6 @@ if comando == 'alpcdTP1gr2.py':
         if match: # se o arg começar por top e tiver numeros depois então ....
             n_jobs = int(match.group(2)) # quantidade de jobs mais recentes
             toplst=top(n_jobs)
-            print(json.dumps(toplst, indent=2))
     if funçao == 'salary':
         id_job = int(sys.argv[2])
         salary(id_job)
@@ -299,10 +298,12 @@ if comando == 'alpcdTP1gr2.py':
     if funçao == 'skills':
         skills=sys.argv[2]  
         skills=skills.split(',')
-        start_date = valid_date(sys.argv[3])
-        end_date = valid_date(sys.argv[4])
-        matching_jobs = job_skills(skills, start_date, end_date)
-        print(json.dumps(matching_jobs, indent=2))
+        start_date = valid_date(sys.argv[3])  
+        if start_date is not None:
+            end_date = valid_date(sys.argv[4])
+            if end_date is not None:
+                matching_jobs = job_skills(skills, start_date, end_date)        
+        
     if funçao == 'markdown':
          jobid=int(sys.argv[2])
          caminho= sys.argv[3:][0]
