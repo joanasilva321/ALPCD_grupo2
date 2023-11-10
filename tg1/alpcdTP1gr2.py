@@ -63,7 +63,6 @@ def adiciona_csv(dic,nome_arquivo_csv):
 
 def existentente_csv(dic,nome_arquivo_csv):
      with open(nome_arquivo_csv, 'a', encoding='utf-8') as arquivo_csv:
-    # Seu código para escrever ou ler do arquivo aqui
         for job in dic['filtros']:
             titulo = job['title']
             empresa = job['company']['name']
@@ -251,15 +250,15 @@ def job_skills(skills, start_date, end_date):
                 matching_jobs.append(job)
                 # se já encontrou pelo menos um skill vai procurar nos outros jobs restantes
             
-    # dic = {'filtros': matching_jobs}
+    dic = {'filtros': matching_jobs}
     
-    # csv=str(input('Deseja inportar para formato csv(s/n)? '))
+    csv=str(input('Deseja inportar para formato csv(s/n)? '))
 
-    # while csv != 's' and csv != 'n':
-    #      csv=str(input('Insira (s) para sim ou (n) para não, minúsculo: '))
+    while csv != 's' and csv != 'n':
+          csv=str(input('Insira (s) para sim ou (n) para não, minúsculo: '))
 
-    # if csv == 's':
-    #    csv_(dic)
+    if csv == 's':
+        csv_(dic)
 
     return matching_jobs
 
