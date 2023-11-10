@@ -19,11 +19,8 @@ json_result=response.json()
 
 print('Olá, isso é uma API com pesquisas sobre vagas de emprego\n')
 
-#codigo desnecessario
-# for item in json_result['results']:
-#        print(item)
-
 def csv_(dic):
+     print(dic)
      nome_arquivo_csv = str(input('Qual será o nome do arquivo? ')) + '.csv'
      if arquivo_existe(nome_arquivo_csv):
             novo_csv=str(input(f"O arquivo '{nome_arquivo_csv}' já existe. Deseja criar outro?(s/n): "))
@@ -45,32 +42,51 @@ def adiciona_csv(dic,nome_arquivo_csv):
         for job in dic['filtros']:
             titulo = job['title']
             empresa = job['company']['name']
-            descricao = job['company']['description']
+            if 'description' in job['company']:
+                descricao = job['company']['description']
             data_p = job['publishedAt']
-            salario = job['wage']
-            localizacoes = ', '.join([local['name'] for local in job['locations']])
+            if 'wage' in job:
+                salario = job['wage']
+            if 'locations' in job:
+                localizacoes = ', '.join([local['name'] for local in job['locations']])
 
             descricao = descricao.replace(';', ',')  # Remover ponto e vírgula da descrição
-
-            linha = f'{titulo};{empresa};"{descricao}";{data_p};{salario};{localizacoes}\n'
+            if 'locations' not in job:
+                linha = f'{titulo};{empresa};"{descricao}";{data_p};{salario};{None}\n'
+            elif 'description' not in job['company']:
+                 linha=f'{titulo};{empresa};{None};{data_p};{salario};{localizacoes}\n'
+            elif 'wage' not in job:
+                 linha=f'{titulo};{empresa};"{descricao}";{data_p};{None};{localizacoes}\n'
+            else:
+                linha=f'{titulo};{empresa};"{descricao}";{data_p};{salario};{localizacoes}\n'
             arquivo_csv.write(linha)
 
 def existentente_csv(dic,nome_arquivo_csv):
-     with open(nome_arquivo_csv, 'a', newline='', encoding='utf-8') as arquivo_csv:
+     with open(nome_arquivo_csv, 'a', encoding='utf-8') as arquivo_csv:
+    # Seu código para escrever ou ler do arquivo aqui
         for job in dic['filtros']:
             titulo = job['title']
             empresa = job['company']['name']
-            descricao = job['company']['description']
+            if 'description' in job['company']:
+                descricao = job['company']['description']
             data_p = job['publishedAt']
-            salario = job['wage']
-            localizacoes = ', '.join([local['name'] for local in job['locations']])
-            
-            # Manipular os dados para tratar vírgulas na descrição
-            descricao = descricao.replace(';', '')  # Remover ponto e vírgula da descrição
-            
-            # Escrever a linha no arquivo CSV
-            linha = f'{titulo};{empresa};"{descricao}";{data_p};{salario};{localizacoes}\n'
-            arquivo_csv.write(linha)    
+            if 'wage' in job:
+                salario = job['wage']
+            if 'locations' in job:
+                localizacoes = ', '.join([local['name'] for local in job['locations']])
+
+            descricao = descricao.replace(';', ',')  # Remover ponto e vírgula da descrição
+            if 'locations' not in job:
+                linha = f'{titulo};{empresa};"{descricao}";{data_p};{salario};{None}\n'
+            elif 'description' not in job['company']:
+                 linha=f'{titulo};{empresa};{None};{data_p};{salario};{localizacoes}\n'
+            elif 'wage' not in job:
+                 linha=f'{titulo};{empresa};"{descricao}";{data_p};{None},{localizacoes}\n'
+            else:
+                linha=f'{titulo};{empresa};"{descricao}";{data_p};{salario};{localizacoes}\n'
+            arquivo_csv.write(linha)
+
+              
 
 def arquivo_existe(nome_arquivo):
     return os.path.exists(nome_arquivo)
