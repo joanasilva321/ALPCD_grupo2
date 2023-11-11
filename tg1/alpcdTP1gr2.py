@@ -7,11 +7,9 @@ import html
 import re
 import datetime
 
-
 r=requests.get(url='https://api.itjobs.pt/job/get.json') # get json
 #print(r) #Response [403]
 #O código de status HTTP 403 indica que você não tem permissão para acessar o recurso solicitado na API
-
 url = 'https://api.itjobs.pt/job/list.json?api_key=147c9727c329bd78b2f9944b5797bf8e&limit=5'
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1667.0 Safari/537.36'}
 response = requests.get(url, headers=headers)
@@ -85,8 +83,6 @@ def existentente_csv(dic,nome_arquivo_csv):
             else:
                 linha=f'{titulo};{empresa};"{descricao}";{data_p};{salario};{localizacoes}\n'
             arquivo_csv.write(linha)
-
-              
 
 def arquivo_existe(nome_arquivo):
     return os.path.exists(nome_arquivo)
@@ -189,39 +185,46 @@ def pesquisa_id():
             print(item['id'],item['title'])
         print('-------------------------------')
 
+#função de pesquisa de trabalhos full-time publicados por uma empresa numa determinada localidade
+#a função recebe como argumentos a localidade, a empresa e o número de trabalhos a mostrar
 def search(local: str,empresa: str,n: int):
     print(local,empresa,n)
+    #lista de trabalhos que atendem às condições
     lista_jobs = []
     for i in json_result["results"]:
+        #verifica se existe localização
         if 'locations' in i:
             for location in i['locations']:
+                #verifica a localização e a empresa 
                 if location['name'] == local and i["company"]["name"] == empresa.strip():
                     if 'types' in i:
                         for job_type in i['types']:
+                            #verifica se o trabalho é Full-time
                             if job_type['name'] == 'Full-time':
                                 lista_jobs.append(i)
+                                #adiciona só o nº de trabalhos pedido
                                 if len(lista_jobs) == n:
                                     break
         if len(lista_jobs) == n:
                                     break
+    #criação de dicionário com os trabalhos
     dic={
         'filtros':lista_jobs
     }
+    #pergunta ao cliente se quer csv
     csv=str(input('Deseja inportar para formato csv(s/n)? '))
 
     while csv != 's' and csv != 'n':
          csv=str(input('Insira (s) para sim ou (n) para não, minúsculo: '))
-
+    #criação do csv
     if csv == 's':
        csv_(dic)
-
 
 def valid_date(s):
     try:
         return datetime.datetime.strptime(s, "%Y-%m-%d").date()
     except ValueError:
         print(f"Invalid date format. Please use YYYY-MM-DD.")
-    
     return None
 
 def date(current_job, start_date, end_date):
@@ -232,17 +235,14 @@ def date(current_job, start_date, end_date):
     if end_date == None:
         if start_date <= current_date:
             pass
-
     else:
         if start_date <= current_date <= end_date:
             return True
         else:
             return False
 
-
 def job_skills(skills, start_date, end_date):
     matching_jobs = []
-
     for job in json_result['results']: # pegar nas informações de cada job no JSON da API
         bod = job['body']
 
@@ -263,35 +263,36 @@ def job_skills(skills, start_date, end_date):
     if csv == 's':
        csv_(dic)
 
-    
-
+#criação do markdown do body de um trabalho especifico
 def markdown(jobid, caminho):
+    #se o id existir, cria o markdown
     control=False
     for i in json_result['results']:
+        #verifica se existe o id
         if i['id']==jobid:
-            teste=i
+            job=i
             control=True
+    #se for True então existe o id e cria o ficheiro
     if control==True:
-        body_html=teste["body"]
+        #pega o body do trabalho
+        body_html=job["body"]
+        #tranforma o body em texto
         body_text= html.unescape(body_html).replace("<p>", "").replace("</p>", "\n") 
-    
+        #cria o ficheiro com o caminho dado
         with open(caminho,"w", encoding="utf-8") as file:
             file.write(body_text)
         print("Markdown criado com sucesso!")
+    #se control for false, não existe o id dado
     else:
         print(f"Job com ID {jobid} não encontrado")
-
-
 
 ########################## Argumentos:
 if len(sys.argv) < 2:
     print("Uso: python alpcdTP1gr2.py <função> <input/consulte o menu para ver se tem input>")
     sys.exit(1)
 
-
 comando=sys.argv[0]
 funçao=sys.argv[1]
-
 
 if comando == 'alpcdTP1gr2.py':
     if len(sys.argv)==2: # neste caso só tem esta opção que tem len==2 as outras tem mais args
