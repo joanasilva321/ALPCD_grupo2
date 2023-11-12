@@ -12,7 +12,7 @@ r=requests.get(url='https://api.itjobs.pt/job/get.json') # get json
 #print(r) #Response [403]
 #O código de status HTTP 403 indica que você não tem permissão para acessar o recurso solicitado na API
 
-url = 'https://api.itjobs.pt/job/list.json?api_key=147c9727c329bd78b2f9944b5797bf8e&limit=1500'
+url = 'https://api.itjobs.pt/job/list.json?api_key=147c9727c329bd78b2f9944b5797bf8e&limit=30'
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1667.0 Safari/537.36'}
 response = requests.get(url, headers=headers)
 json_result=response.json()
@@ -112,17 +112,15 @@ def top(n_jobs):
         # tendo uma infinidade de jobs, começamos por colocar os n primeiros jobs que aparecem
         # posterioremente subsituiremos os que tem data mais recente pelo que tem data mais antiga no dicionario
         if len(recent_jobs)<n_jobs:
-            print(data_para_colocar)
             recent_jobs[job_id]=data_para_colocar
         else:
-
             so = {k: v for k, v in sorted(recent_jobs.items(), key=lambda x: x[1])} # dicionario ordenado
     # verifica que o primeiro a verificar é o mais antigo
             # print(sorted_jobs)
             for job, i in so.items():
-                if i < time:
+                if i < data_para_colocar:
                     so[job_id] = so.pop(f'{job}', None)
-                    so[job] = time               
+                    so[job] = data_para_colocar              
 
 
             # ordena o dicionário recent_jobs pela data (key=lambda x:x[1]), mais antigo ao mais recente, usando a lista recent_jobs.items que retorna um par de valores onde x[1] é a data
@@ -195,7 +193,7 @@ def salary(id_job):
             pl_key=[ # palavras chaves para salário:
             "Salário", "Remuneração", "Vencimento", "Ordenado", "Rendimento", "Proventos",  
             "Salary", "Compensation", "Earnings", "Wage", "Pay", "Income" ,'trabalho','employes',
-            '$','£','portunidades','oportunidade'
+            '$','£','portunidades','oportunidade','euros','dolar'
             ]
             if 'description' in item['company']:
                 print('descrição da empresa:'.upper())
