@@ -12,11 +12,10 @@ r=requests.get(url='https://api.itjobs.pt/job/get.json') # get json
 #print(r) #Response [403]
 #O código de status HTTP 403 indica que você não tem permissão para acessar o recurso solicitado na API
 
-url = 'https://api.itjobs.pt/job/list.json?api_key=147c9727c329bd78b2f9944b5797bf8e&limit=1600'
+url = 'https://api.itjobs.pt/job/list.json?api_key=147c9727c329bd78b2f9944b5797bf8e&limit=30'
 headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1667.0 Safari/537.36'}
 response = requests.get(url, headers=headers)
 json_result=response.json()
-
 
 #menu
 def menu():
@@ -26,7 +25,7 @@ def menu():
     print('2:Trabalho com filtro(empresa,localidade): \npython alpcdTP1.py search <localidade> <nome empresa> <nº de empregos>\n')
     print('3:Pesquisa de IDS dos empregos: \npython alpcdTP1.py pesquisa_id\n')
     print('4:Pesquisa do salário com base no id do emprego: \npython alpcdTP1.py salary <id>\n')
-    print('5:Trabalhos com filtro de skills exigidas e com filtro de período de data publicação: \npython alcdTP1gr2.py job_skills "<skill 1>,<skill n>" <data início aaaa-mm-dd> <data fim aaaa-mm-dd>\n')
+    print('5:Trabalhos com filtro de skills exigidas e com filtro de período de data publicação: \npython alcdTP1gr2.py job_skills <skill 1>,<skill n> <data início aaaa-mm-dd> data fim aaaa-mm-dd\n')
     print('6:Transformar as informações de um ID(emprego) em markdown e guardar em um ficheiro: \npython alpcdTP1gr2.py markdown <id> <caminho do ficheiro>\n')
     print('7:As informações filtradas das funcionalidades 1,2 e 5 podem ser guardadas em csv!\n')
 menu()
@@ -137,7 +136,6 @@ def top(n_jobs):
 
     if csv == 's':
        csv_(dic)
-
 #salario para um certo id
 def salary(id_job):
     for item in json_result['results']: # para cada id
@@ -270,6 +268,7 @@ def job_skills(skills, start_date, end_date):
 
                 # se já encontrou pelo menos um skill vai procurar nos outros jobs restantes
 
+
     print(json.dumps(matching_jobs, indent=2)) # mostrar os match em formato JSON
 
     dic = {'filtros': matching_jobs}
@@ -314,30 +313,23 @@ if comando == 'alpcdTP1gr2.py':
         pesquisa_id() # chama
     elif len(sys.argv)==2: # N job mais recentes
         # nome_ficheiro topn
-        # neste caso só tem esta opção que tem len==2 as outras tem mais args
-
         # encotrar o número de trabalhos que quer com o nº colocado no final de 'top'
         match = re.search(r'\b(top)(\d+)\b', sys.argv[1]) # () para fazer grupos, ver se começa por top e acaba por um número
         if match: # se o arg começar por top e tiver numeros depois então ....
             n_jobs = int(match.group(2)) # quantidade de jobs mais recentes
-            top(n_jobs)
-        else: 
-            print('formato de inserção incoreto')
-            menu()
-    elif funçao == 'salary': # se a função for salário:
-        id_job = int(sys.argv[2]) # segundo arg é o id
-        salary(id_job) # chama
-    elif funçao == 'search' and len(sys.argv) >= 5: # se a função for search:
-        local=str(sys.argv[2]) # local é o 2º arg
-        empresa_args = sys.argv[3:-1] # nome da empresa vai do 3º arg ao penultimo
-        empresa = ' '.join(empresa_args) # junta o nome da empresa, tira os espaços
-        n=int(sys.argv[-1]) # núemro de trabalhos mostrados é o último arg
-        search(local,empresa,n) # chama
-        start_date = valid_date(sys.argv[3])  
-    elif funçao == 'salary': 
-        id_job = int(sys.argv[2]) # id é o 2º arg
-        salary(id_job)#chama
-    elif funçao == 'skills': # nome_ficheiro nome_funcao skills data_inico data_fim
+            toplst=top(n_jobs)
+    if funçao == 'salary': 
+        id_job = int(sys.argv[2])
+        salary(id_job)
+    if funçao =='pesquisa_id':
+        pesquisa_id()
+    if funçao == 'search' and len(sys.argv) >= 5:
+        local=str(sys.argv[2])
+        empresa_args = sys.argv[3:-1]
+        empresa = ' '.join(empresa_args)
+        n=int(sys.argv[-1])
+        search(local,empresa,n)
+    if funçao == 'skills': # nome_ficheiro nome_funcao skills data_inico data_fim
         skills=sys.argv[2] 
         skills=skills.split(', ') # criar a lista de skills , meti espaço depois de ' para não incluir o espaço no abjeto que é criado
         start_date = valid_date(sys.argv[3]) 
@@ -353,8 +345,8 @@ if comando == 'alpcdTP1gr2.py':
     menu()
 
 else:
-    print(f"Comando '{comando}' não reconhecido.Consulte o menu:".upper()) # inseriu 1º arg diferente de alpcd...
-    menu()
+    print(f"Comando '{comando}' não reconhecido.")
+
 
 
     
