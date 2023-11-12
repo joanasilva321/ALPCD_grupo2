@@ -98,30 +98,39 @@ def top(n_jobs):
         job_id=i['id']
         job_time=i['publishedAt']
 
-    # Convert string to datetime object
-        time = datetime.datetime.strptime(job_time, "%Y-%m-%d %H:%M:%S")
-
-        if len(recent_jobs)<n_jobs: # começa por colocar os 10 primeiros jobs que aparecem
-            recent_jobs[job_id]=time
+        # converter a string para formato data
+        data_para_colocar = datetime.datetime.strptime(job_time, "%Y-%m-%d %H:%M:%S")
+        # tendo uma infinidade de jobs, começamos por colocar os n primeiros jobs que aparecem
+        # posterioremente subsituiremos os que tem data mais recente pelo que tem data mais antiga no dicionario
+        if len(recent_jobs)<n_jobs:
+            print(data_para_colocar)
+            recent_jobs[job_id]=data_para_colocar
         else:
-            so = {k: v for k, v in sorted(recent_jobs.items(), key=lambda x: x[1])}
-    # verifica que o primeiro a verificar é o mais antigo
-            # print(sorted_jobs)
-            for job, i in so.items():
-                if i < time:
-                    so[job_id] = so.pop(f'{job}', None)
-                    so[job] = time               
+
+            # ordena o dicionário recent_jobs pela data (key=lambda x:x[1]), mais antigo ao mais recente, usando a lista recent_jobs.items que retorna um par de valores onde x[1] é a data
+            # aplicando a função para cada uma das datas no dicionário original
+            recent_jobs = {k: v for k, v in sorted(recent_jobs.items(), key=lambda x: x[1])} 
+        
+            for job, data_no_dicionario in recent_jobs.items():
+                
+                if data_no_dicionario < data_para_colocar: # verificar se é necessário substituir
+                    recent_jobs[job_id] = recent_jobs.pop(f'{job}', None)
+                    recent_jobs[job] = data_para_colocar          
+
                     break # se já substitui o valor mais antigo do dic
-        lista_mais_recentes=[]
-        for ids in recent_jobs: # ir buscar na API os jobs em especifico com o /get.json e id=
+
+        lista_mais_recentes=[] # lista com as info sobre os n jobs mais recentes
+        
+        for ids in recent_jobs: # ir buscar na API os jobs em especifico com o /get.json e id=ids
             url = f'https://api.itjobs.pt/job/get.json?api_key=147c9727c329bd78b2f9944b5797bf8e&id={ids}'
             res = requests.get(url, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 6.2; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/32.0.1667.0 Safari/537.36'})
             encontrado=res.json()
             lista_mais_recentes.append(encontrado)
             
-    print(json.dumps(lista_mais_recentes, indent=2))
+    print(json.dumps(lista_mais_recentes, indent=2)) # match encontrados em formato JSON
 
     dic={'filtros': lista_mais_recentes}
+
     csv=str(input('Deseja inportar para formato csv(s/n)? '))
 
     while csv != 's' and csv != 'n':
@@ -216,42 +225,45 @@ def search(local: str,empresa: str,n: int):
        csv_(dic)
 
 
-def valid_date(s):
+def valid_date(s): # validar o formato do input da data
     try:
-        return datetime.datetime.strptime(s, "%Y-%m-%d").date()
+        return datetime.datetime.strptime(s, "%Y-%m-%d").date() 
+        # se o input for convertido para data com sucesso ->  retorna o objeto (string) inicial com formato padrão de data para poder ser comparado com outras datas 
     except ValueError:
         print(f"Invalid date format. Please use YYYY-MM-DD.")
     
     return None
 
-def date(current_job, start_date, end_date):
-    publ_at = current_job['publishedAt']
-    date = publ_at.split(' ')
-    publ_at_date = date[0]
-    current_date = datetime.datetime.strptime(publ_at_date, "%Y-%m-%d").date()
-    if end_date == None:
-        if start_date <= current_date:
-            pass
+def date(current_job, start_date, end_date): # verificar se a data de publicação encontra-se entre data_inico e data_fim
+    publ_at = current_job['publishedAt'] # data de publicação do job que está a ser inspecionado no loop da função job_skills
+    date = publ_at.split(' ') 
+    publ_at_date = date[0] # para a data só precisamos da primeira parte
 
+    current_date = datetime.datetime.strptime(publ_at_date, "%Y-%m-%d").date() # transforma string da data de publicação para formato de data 
+
+    if start_date <= current_date <= end_date:
+        return True
     else:
-        if start_date <= current_date <= end_date:
-            return True
-        else:
-            return False
+        return False
 
 
-def job_skills(skills, start_date, end_date):
-    matching_jobs = []
+def job_skills(skills, start_date, end_date): # verificar quais os jobs que tem skills e datas requisitadas
+
+    matching_jobs = [] # lista para os match com os argumentos introduzidos
 
     for job in json_result['results']: # pegar nas informações de cada job no JSON da API
-        bod = job['body']
+        body = job['body'] # texto onde procurar as skills
 
-# verifica se pelo menos um dos skills encontra se no body
-        if (re.search(r'\b' + re.escape(skill) + r'\b', bod, re.IGNORECASE) for skill in skills):        
+        ref = re.compile(r'\b(?:' + '|'.join(map(re.escape, skills)) + r')\b', re.IGNORECASE) 
+        # procurar se cada skill na lista skills (?:), na sua totalidade da palavra (\b), existe no body
+        # usa-se re.escape para anular qualquer significado especial numa expressão regual e re.ignorecase para considerar palavras com maiusculas e minusculas
+       
+        # verifica se pelo menos um dos skills encontra se no body
+        if (re.search(ref, body)):        # se ref foi encontrada no texto do body
             if date(job, start_date, end_date): # verificar se cada job que respeita a condição tem data de publicação entre as datas introduzidas no terminal
                 matching_jobs.append(job)
-                # se já encontrou pelo menos um skill vai procurar nos outros jobs restantes
-    print(json.dumps(matching_jobs, indent=2))
+
+    print(json.dumps(matching_jobs, indent=2)) # mostrar os match em formato JSON
 
     dic = {'filtros': matching_jobs}
     
@@ -264,7 +276,6 @@ def job_skills(skills, start_date, end_date):
        csv_(dic)
 
     
-
 def markdown(jobid, caminho):
     control=False
     for i in json_result['results']:
@@ -294,13 +305,15 @@ funçao=sys.argv[1]
 
 
 if comando == 'alpcdTP1gr2.py':
-    if len(sys.argv)==2: # neste caso só tem esta opção que tem len==2 as outras tem mais args
+    if len(sys.argv)==2: # N job mais recentes
+        # nome_ficheiro topn
+        # neste caso só tem esta opção que tem len==2 as outras tem mais args
         # encotrar o número de trabalhos que quer com o nº colocado no final de 'top'
         match = re.search(r'\b(top)(\d+)\b', sys.argv[1]) # () para fazer grupos
         if match: # se o arg começar por top e tiver numeros depois então ....
             n_jobs = int(match.group(2)) # quantidade de jobs mais recentes
             toplst=top(n_jobs)
-    if funçao == 'salary':
+    if funçao == 'salary': 
         id_job = int(sys.argv[2])
         salary(id_job)
     if funçao =='pesquisa_id':
@@ -311,12 +324,12 @@ if comando == 'alpcdTP1gr2.py':
         empresa = ' '.join(empresa_args)
         n=int(sys.argv[-1])
         search(local,empresa,n)
-    if funçao == 'skills':
-        skills=sys.argv[2]  
-        skills=skills.split(',')
-        start_date = valid_date(sys.argv[3])  
+    if funçao == 'skills': # nome_ficheiro nome_funcao skills data_inico data_fim
+        skills=sys.argv[2] 
+        skills=skills.split(', ') # criar a lista de skills , meti espaço depois de ' para não incluir o espaço no abjeto que é criado
+        start_date = valid_date(sys.argv[3]) 
         if start_date is not None:
-            end_date = valid_date(sys.argv[4])
+            end_date = valid_date(sys.argv[4]) 
             if end_date is not None:
                 matching_jobs = job_skills(skills, start_date, end_date)        
         
