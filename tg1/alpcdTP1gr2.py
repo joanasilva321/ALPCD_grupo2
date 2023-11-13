@@ -1,7 +1,7 @@
 #https://www.itjobs.pt/api/docs
 import requests # para a url
 import sys # arguementos no terminal
-import os # função arquivo_existe
+import os # função arquivo_existes
 import json # para por em formato json
 import html # função markdown
 import re # para utilizar expressoes regulares
