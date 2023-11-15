@@ -322,7 +322,7 @@ if comando == 'alpcdTP1gr2.py':
         if match: # se o arg começar por top e tiver numeros depois então ....
             n_jobs = int(match.group(2)) # quantidade de jobs mais recentes
             toplst=top(n_jobs)
-    if funçao == 'salary': 
+    if funçao == 'salary' and len(sys.argv) >=3: 
         id_job = int(sys.argv[2])
         salary(id_job)
     if funçao == 'search' and len(sys.argv) >= 5:
@@ -331,7 +331,7 @@ if comando == 'alpcdTP1gr2.py':
         empresa = ' '.join(empresa_args)
         n=int(sys.argv[-1])
         search(local,empresa,n)
-    if funçao == 'skills': # nome_ficheiro nome_funcao skills data_inico data_fim
+    if funçao == 'skills' and len(sys.argv) >= 5: # nome_ficheiro nome_funcao skills data_inico data_fim
         skills=sys.argv[2] 
         skills=skills.split(', ') # criar a lista de skills , meti espaço depois de ' para não incluir o espaço no abjeto que é criado
         start_date = valid_date(sys.argv[3]) 
@@ -339,7 +339,7 @@ if comando == 'alpcdTP1gr2.py':
             end_date = valid_date(sys.argv[4]) 
             if end_date is not None:
                 matching_jobs = job_skills(skills, start_date, end_date)          
-    elif funçao == 'markdown': # se função é markdown:
+    elif funçao == 'markdown' and len(sys.argv) >=4: # se função é markdown:
          jobid=int(sys.argv[2])# id é o 2º arg
          caminho= sys.argv[3:][0] # caminho é do 3º arg ao último
          markdown(jobid,caminho) # chama
