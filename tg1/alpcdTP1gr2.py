@@ -28,7 +28,6 @@ def menu():
     print('5:Trabalhos com filtro de skills exigidas e com filtro de período de data publicação: \npython alcdTP1gr2.py job_skills <skill 1>,<skill n> <data início aaaa-mm-dd> data fim aaaa-mm-dd\n')
     print('6:Transformar as informações de um ID(emprego) em markdown e guardar em um ficheiro: \npython alpcdTP1gr2.py markdown <id> <caminho do ficheiro>\n')
     print('7:As informações filtradas das funcionalidades 1,2 e 5 podem ser guardadas em csv!\n')
-menu()
 
 #confere se já existe um arquivo csv com o nome escolhido e direciona para as funções adiciona_csv ou existente_csv
 def csv_(dic):
@@ -321,8 +320,6 @@ if comando == 'alpcdTP1gr2.py':
     if funçao == 'salary': 
         id_job = int(sys.argv[2])
         salary(id_job)
-    if funçao =='pesquisa_id':
-        pesquisa_id()
     if funçao == 'search' and len(sys.argv) >= 5:
         local=str(sys.argv[2])
         empresa_args = sys.argv[3:-1]
