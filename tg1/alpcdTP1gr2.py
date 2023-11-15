@@ -21,17 +21,15 @@ json_result=response.json()
 def menu():
     print('bem-vindo!isso é uma API com pesquisas sobre empregos.\n'.upper())
     print('Funcionalidades:\n'.upper())
-    print('1:Trabalhos mais recentes: \npython alpcdTP1.py top<nº de empregos>\n')
-    print('2:Trabalho com filtro(empresa,localidade): \npython alpcdTP1.py search <localidade> <nome empresa> <nº de empregos>\n')
-    print('3:Pesquisa de IDS dos empregos: \npython alpcdTP1.py pesquisa_id\n')
-    print('4:Pesquisa do salário com base no id do emprego: \npython alpcdTP1.py salary <id>\n')
+    print('1:Trabalhos mais recentes: \npython alpcdTP1gr2.py top<nº de empregos>\n')
+    print('2:Trabalho com filtro(empresa,localidade): \npython alpcdTP1gr2.py search <localidade> <nome empresa> <nº de empregos>\n')
+    print('3:Pesquisa de IDS dos empregos: \npython alpcdTP1gr2.py pesquisa_id\n')
+    print('4:Pesquisa do salário com base no id do emprego: \npython alpcdTP1gr2.py salary <id>\n')
     print('5:Trabalhos com filtro de skills exigidas e com filtro de período de data publicação: \npython alcdTP1gr2.py job_skills <skill 1>,<skill n> <data início aaaa-mm-dd> data fim aaaa-mm-dd\n')
     print('6:Transformar as informações de um ID(emprego) em markdown e guardar em um ficheiro: \npython alpcdTP1gr2.py markdown <id> <caminho do ficheiro>\n')
     print('7:As informações filtradas das funcionalidades 1,2 e 5 podem ser guardadas em csv!\n')
-
 #confere se já existe um arquivo csv com o nome escolhido e direciona para as funções adiciona_csv ou existente_csv
 def csv_(dic):
-     print(dic)
      nome_arquivo_csv = str(input('Qual será o nome do arquivo? ')) + '.csv' #input nome.csv
      if arquivo_existe(nome_arquivo_csv): #chama a função que verifica a existência dos arquivos
             novo_csv=str(input(f"O arquivo '{nome_arquivo_csv}' já existe. Deseja criar outro?(s/n): "))
@@ -113,7 +111,7 @@ def top(n_jobs):
         recent_jobs[job_id]=data_para_colocar
     # ordena o dicionário recent_jobs pela data (key=lambda x:x[1]), mais antigo ao mais recente, usando a lista recent_jobs.items que retorna um par de valores onde x[1] é a data
     # aplicando a função para cada uma das datas no dicionário original
-    recent_jobs = {k: v for k, v in sorted(recent_jobs.items(), key=lambda x: x[1])} 
+    recent_jobs = {k: v for k, v in sorted(recent_jobs.items(), key=lambda x: x[1], reverse=True)} 
     recent_jobs = list(recent_jobs.items())   # transformar em lista
     recent_jobs = recent_jobs[:n_jobs]  # poder pegar nos n primeiros
 
@@ -254,27 +252,24 @@ def date(current_job, start_date, end_date): # verificar se a data de publicaç�
     matching_jobs = []
 # verificar quais os jobs que tem skills e datas requisitadas
 def job_skills(skills, start_date, end_date): 
-
+    print(skills)
     matching_jobs = [] # lista para os match com os argumentos introduzidos
 
 
     for job in json_result['results']: # pegar nas informações de cada job no JSON da API
         body = job['body'] # texto onde procurar as skills
-
-        ref = re.compile(r'\b(?:' + '|'.join(map(re.escape, skills)) + r')\b', re.IGNORECASE) 
-        # procurar se cada skill na lista skills (?:), na sua totalidade da palavra (\b), existe no body
-        # usa-se re.escape para anular qualquer significado especial numa expressão regual e re.ignorecase para considerar palavras com maiusculas e minusculas
-       
+        # usa se o operador OR para que seja retornado True se existir pelo menos uma skills no body
+        pattern = '|'.join(map(re.escape, skills)) # anula-se qualquer significado especial numa expressão regular (como o . *  \  () )
+        match = re.search(pattern, body, re.IGNORECASE) # procura no texto
+        result = bool(match) # retorna True or False
+        
         # verifica se pelo menos um dos skills encontra se no body
-        if (re.search(ref, body)):        # se ref foi encontrada no texto do body
+        
+        if result:  
             if date(job, start_date, end_date): # verificar se cada job que respeita a condição tem data de publicação entre as datas introduzidas no terminal
                 matching_jobs.append(job)
 
-                # se já encontrou pelo menos um skill vai procurar nos outros jobs restantes
-
-
-    print(json.dumps(matching_jobs, indent=2)) # mostrar os match em formato JSON
-
+    # print(json.dumps(matching_jobs, indent=2)) # mostrar os match em formato JSON
     dic = {'filtros': matching_jobs}
 
     csv=str(input('Deseja inportar para formato csv(s/n)? '))
@@ -333,7 +328,7 @@ if comando == 'alpcdTP1gr2.py':
         search(local,empresa,n)
     if funçao == 'skills' and len(sys.argv) >= 5: # nome_ficheiro nome_funcao skills data_inico data_fim
         skills=sys.argv[2] 
-        skills=skills.split(', ') # criar a lista de skills , meti espaço depois de ' para não incluir o espaço no abjeto que é criado
+        skills=skills.split(',') # criar a lista de skills fazendo split entre cada virgula
         start_date = valid_date(sys.argv[3]) 
         if start_date is not None:
             end_date = valid_date(sys.argv[4]) 
