@@ -252,24 +252,24 @@ def date(current_job, start_date, end_date): # verificar se a data de publicaç�
     matching_jobs = []
 # verificar quais os jobs que tem skills e datas requisitadas
 def job_skills(skills, start_date, end_date): 
-    print(skills)
-    matching_jobs = [] # lista para os match com os argumentos introduzidos
 
+    matching_jobs = [] # lista para os match com os argumentos introduzidos
+    pattern = '|'.join(map(re.escape, skills))
 
     for job in json_result['results']: # pegar nas informações de cada job no JSON da API
         body = job['body'] # texto onde procurar as skills
         # usa se o operador OR para que seja retornado True se existir pelo menos uma skills no body
-        pattern = '|'.join(map(re.escape, skills)) # anula-se qualquer significado especial numa expressão regular (como o . *  \  () )
+        
         match = re.search(pattern, body, re.IGNORECASE) # procura no texto
         result = bool(match) # retorna True or False
         
         # verifica se pelo menos um dos skills encontra se no body
-        
+
         if result:  
             if date(job, start_date, end_date): # verificar se cada job que respeita a condição tem data de publicação entre as datas introduzidas no terminal
                 matching_jobs.append(job)
 
-    # print(json.dumps(matching_jobs, indent=2)) # mostrar os match em formato JSON
+    print(json.dumps(matching_jobs, indent=2)) # mostrar os match em formato JSON
     dic = {'filtros': matching_jobs}
 
     csv=str(input('Deseja inportar para formato csv(s/n)? '))
@@ -310,14 +310,14 @@ if comando == 'alpcdTP1gr2.py':
 
     if funçao == 'pesquisa_id': # se a funçao for pesquisa_id:
         pesquisa_id() # chama
-    elif len(sys.argv)==2: # N job mais recentes
+    elif len(sys.argv) == 2: # N job mais recentes
         # nome_ficheiro topn
         # encotrar o número de trabalhos que quer com o nº colocado no final de 'top'
         match = re.search(r'\b(top)(\d+)\b', sys.argv[1]) # () para fazer grupos, ver se começa por top e acaba por um número
         if match: # se o arg começar por top e tiver numeros depois então ....
             n_jobs = int(match.group(2)) # quantidade de jobs mais recentes
             toplst=top(n_jobs)
-    if funçao == 'salary' and len(sys.argv) >=3: 
+    if funçao == 'salary' and len(sys.argv) == 3: 
         id_job = int(sys.argv[2])
         salary(id_job)
     if funçao == 'search' and len(sys.argv) >= 5:
@@ -326,7 +326,7 @@ if comando == 'alpcdTP1gr2.py':
         empresa = ' '.join(empresa_args)
         n=int(sys.argv[-1])
         search(local,empresa,n)
-    if funçao == 'skills' and len(sys.argv) >= 5: # nome_ficheiro nome_funcao skills data_inico data_fim
+    if funçao == 'skills' and len(sys.argv) == 5: # nome_ficheiro nome_funcao skills data_inico data_fim
         skills=sys.argv[2] 
         skills=skills.split(',') # criar a lista de skills fazendo split entre cada virgula
         start_date = valid_date(sys.argv[3]) 
@@ -334,7 +334,7 @@ if comando == 'alpcdTP1gr2.py':
             end_date = valid_date(sys.argv[4]) 
             if end_date is not None:
                 matching_jobs = job_skills(skills, start_date, end_date)          
-    elif funçao == 'markdown' and len(sys.argv) >=4: # se função é markdown:
+    elif funçao == 'markdown' and len(sys.argv) == 4: # se função é markdown:
          jobid=int(sys.argv[2])# id é o 2º arg
          caminho= sys.argv[3:][0] # caminho é do 3º arg ao último
          markdown(jobid,caminho) # chama
